@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PN结扩散过程交互式演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 50%, #4a1942 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff6b6b 0%, #9c27b0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .description {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1100px) {
+            .demo-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .animation-section {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .circuit-section {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            color: #9c27b0;
+        }
+        
+        #animation-canvas {
+            width: 100%;
+            height: 350px;
+            background: #1e1e2f;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #circuit-canvas {
+            width: 100%;
+            height: 350px;
+            background: #1e1e2f;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .control-group {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #6b2c70 0%, #8e3a8e 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #8e3a8e 0%, #6b2c70 100%);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .slider-container {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: linear-gradient(90deg, #6b2c70 0%, #8e3a8e 100%);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .info-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .info-box h4 {
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+        
+        .explanation {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+        
+        .explanation h2 {
+            color: #9c27b0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .concept {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .concept h3 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+        }
+        
+        .concept p {
+            line-height: 1.6;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            transition: transform 0.5s ease;
+        }
+        
+        .electron {
+            background: radial-gradient(circle at 30% 30%, #4fc3f7, #01579b);
+            width: 10px;
+            height: 10px;
+            box-shadow: 0 0 8px #4fc3f7;
+        }
+        
+        .hole {
+            background: radial-gradient(circle at 30% 30%, #ff5252, #b71c1c);
+            width: 12px;
+            height: 12px;
+            box-shadow: 0 0 8px #ff5252;
+        }
+        
+        .majority {
+            box-shadow: 0 0 12px 3px rgba(255, 255, 255, 0.7);
+        }
+        
+        .ion {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .positive {
+            background: rgba(255, 82, 82, 0.6);
+            border: 1px solid #ff5252;
+            color: white;
+        }
+        
+        .negative {
+            background: rgba(79, 195, 247, 0.6);
+            border: 1px solid #4fc3f7;
+            color: white;
+        }
+        
+        .electric-field {
+            position: absolute;
+            height: 100%;
+            width: 40px;
+            top: 0;
+            background: linear-gradient(to right, 
+                rgba(156, 39, 176, 0) 0%, 
+                rgba(156, 39, 176, 0.3) 50%, 
+                rgba(156, 39, 176, 0) 100%);
+            pointer-events: none;
+        }
+        
+        .field-arrow {
+            position: absolute;
+            color: #9c27b0;
+            font-size: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .depletion-layer {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: rgba(156, 39, 176, 0.2);
+            border-left: 2px dashed #9c27b0;
+            border-right: 2px dashed #9c27b0;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* 电路图样式 */
+        .battery {
+            position: absolute;
+            width: 40px;
+            height: 80px;
+            background: #555;
+            border-radius: 5px;
+        }
+        
+        .resistor {
+            position: absolute;
+            width: 60px;
+            height: 20px;
+            background: #8bc34a;
+            border-radius: 10px;
+        }
+        
+        .wire {
+            position: absolute;
+            background: #ffeb3b;
+            height: 4px;
+        }
+        
+        .pn-junction {
+            position: absolute;
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to right, #ff5252 0%, #ff5252 50%, #4fc3f7 50%, #4fc3f7 100%);
+            border-radius: 5px;
+        }
+        
+        .current-indicator {
+            position: absolute;
+            color: #4caf50;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* 动画效果 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+        
+        @keyframes flow {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(10px); }
+        }
+        
+        .pulse {
+            animation: pulse 3s infinite ease-in-out;
+        }
+        
+        .float {
+            animation: float 5s infinite ease-in-out;
+        }
+        
+        .flow {
+            animation: flow 1s infinite linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PN结扩散过程交互式演示</h1>
+            <div class="description">
+                <p>本演示通过可视化粒子运动展示PN结的形成原理、扩散过程以及单向导电特性。通过交互控制，您可以观察在不同条件下PN结的行为变化。</p>
+            </div>
+        </header>
+        
+        <div class="demo-container">
+            <div class="animation-section">
+                <h2 class="section-title">PN结扩散过程可视化</h2>
+                <div id="animation-canvas">
+                    <!-- 耗尽层 -->
+                    <div class="depletion-layer" id="depletion-layer" style="left: 45%; right: 45%;"></div>
+                    
+                    <!-- 电场指示器 -->
+                    <div class="electric-field" id="electric-field" style="left: 50%; transform: translateX(-50%);"></div>
+                    <div class="field-arrow" id="field-arrow" style="left: calc(50% + 40px);">→</div>
+                    
+                    <!-- 区域标签 -->
+                    <div style="position:absolute; left: 25%; top: 20px; transform: translateX(-50%); color: #ff5252;">P型半导体</div>
+                    <div style="position:absolute; right: 25%; top: 20px; transform: translateX(50%); color: #4fc3f7;">N型半导体</div>
+                    
+                    <!-- 粒子由JavaScript动态生成 -->
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <button id="btn-start">开始扩散</button>
+                        <button id="btn-reset">重置</button>
+                    </div>
+                    <div class="control-group">
+                        <button id="btn-forward-bias">正向偏置</button>
+                        <button id="btn-reverse-bias">反向偏置</button>
+                    </div>
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>扩散速度</span>
+                        <span id="speed-value">中等</span>
+                    </div>
+                    <input type="range" id="speed-slider" min="1" max="10" value="5">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>PN结厚度</span>
+                        <span id="thickness-value">中等</span>
+                    </div>
+                    <input type="range" id="thickness-slider" min="1" max="10" value="5">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>温度</span>
+                        <span id="temp-value">室温</span>
+                    </div>
+                    <input type="range" id="temp-slider" min="1" max="10" value="5">
+                </div>
+                
+                <div class="info-panel">
+                    <div class="info-box">
+                        <h4>多子运动</h4>
+                        <div>P区空穴: <span id="majority-holes">0</span></div>
+                        <div>N区电子: <span id="majority-electrons">0</span></div>
+                    </div>
+                    <div class="info-box">
+                        <h4>少子运动</h4>
+                        <div>P区电子: <span id="minority-electrons">0</span></div>
+                        <div>N区空穴: <span id="minority-holes">0</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="circuit-section">
+                <h2 class="section-title">PN结偏置电路</h2>
+                <div id="circuit-canvas">
+                    <!-- 正向偏置电路 -->
+                    <div class="battery" style="left: 50px; top: 50px;">
+                        <div style="position:absolute; width:20px; height:5px; background:#ff6b6b; left:10px; top:20px;">+</div>
+                        <div style="position:absolute; width:20px; height:5px; background:#4fc3f7; left:10px; top:55px;">-</div>
+                    </div>
+                    
+                    <div class="wire" style="left: 90px; top: 70px; width: 60px;"></div>
+                    
+                    <div class="resistor" style="left: 160px; top: 65px;"></div>
+                    
+                    <div class="wire" style="left: 220px; top: 70px; width: 60px;"></div>
+                    
+                    <div class="pn-junction" style="left: 290px; top: 60px;">
+                        <div style="position:absolute; left:5px; top:15px; color:white; font-size:12px;">P</div>
+                        <div style="position:absolute; right:5px; top:15px; color:white; font-size:12px;">N</div>
+                    </div>
+                    
+                    <div class="wire" style="left: 350px; top: 70px; width: 60px;"></div>
+                    
+                    <div class="wire" style="left: 90px; top: 70px; width: 4px; height: 150px; transform: translateY(150px);"></div>
+                    
+                    <div class="wire" style="left: 90px; top: 220px; width: 320px; height: 4px;"></div>
+                    
+                    <div class="wire" style="left: 410px; top: 70px; width: 4px; height: 150px;"></div>
+                    
+                    <!-- 电流指示 -->
+                    <div class="current-indicator" id="current-indicator" style="left: 200px; top: 120px;">I = 0 mA</div>
+                    
+                    <!-- 电压指示 -->
+                    <div class="current-indicator" style="left: 30px; top: 140px; color: #ff6b6b;">V = <span id="voltage-value">0</span> V</div>
+                    
+                    <!-- 模式指示 -->
+                    <div class="current-indicator" style="left: 300px; top: 30px; color: #9c27b9;" id="bias-mode">无偏置</div>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>偏置电压</span>
+                                <span id="voltage-display">0 V</span>
+                            </div>
+                            <input type="range" id="voltage-slider" min="-10" max="10" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button id="btn-show-forward">显示正向偏置</button>
+                        <button id="btn-show-reverse">显示反向偏置</button>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <div class="info-box">
+                        <h4>电路状态</h4>
+                        <div>偏置模式: <span id="circuit-mode">无偏置</span></div>
+                        <div>电流: <span id="current-value">0 mA</span></div>
+                        <div>耗尽层宽度: <span id="depletion-width">中等</span></div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4>载流子运动</h4>
+                        <div>扩散电流: <span id="diffusion-current">0</span></div>
+                        <div>漂移电流: <span id="drift-current">0</span></div>
+                        <div>净电流: <span id="net-current">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h2>PN结原理说明</h2>
+            
+            <div class="concept">
+                <h3>PN结的形成</h3>
+                <p>当P型半导体和N型半导体结合时，由于浓度差，P区的空穴向N区扩散，N区的电子向P区扩散。扩散后，在交界处形成不能移动的离子，建立内电场（空间电荷区或耗尽层）。</p>
+            </div>
+            
+            <div class="concept">
+                <h3>多子与少子</h3>
+                <p>P型半导体中，空穴是多数载流子（多子），电子是少数载流子（少子）。N型半导体中，电子是多数载流子（多子），空穴是少数载流子（少子）。在PN结中，多子的扩散运动与少子的漂移运动达到平衡。</p>
+            </div>
+            
+            <div class="concept">
+                <h3>正向偏置与反向偏置</h3>
+                <p>PN结具有单向导电性：正向偏置时（P区接正，N区接负），外电场与内电场方向相反，耗尽层变窄，多子扩散运动占优势，形成较大正向电流。反向偏置时（P区接负，N区接正），外电场与内电场方向相同，耗尽层变宽，少子漂移运动占优势，形成很小反向电流。</p>
+            </div>
+            
+            <div class="concept">
+                <h3>交互操作说明</h3>
+                <p>• <strong>开始扩散</strong>：启动PN结形成过程的动画<br>
+                   • <strong>重置</strong>：恢复初始状态<br>
+                   • <strong>正向偏置</strong>：施加正向电压观察电流导通<br>
+                   • <strong>反向偏置</strong>：施加反向电压观察电流阻断<br>
+                   • <strong>扩散速度</strong>：调整载流子运动速度<br>
+                   • <strong>PN结厚度</strong>：调整耗尽层宽度<br>
+                   • <strong>温度</strong>：模拟温度对半导体特性的影响<br>
+                   • <strong>偏置电压</strong>：精确控制施加的电压大小</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>PN结扩散过程教学演示 | 基于半导体物理原理 | 设计灵感来自多源PN结教学材料</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('animation-canvas');
+            const circuitCanvas = document.getElementById('circuit-canvas');
+            const startBtn = document.getElementById('btn-start');
+            const resetBtn = document.getElementById('btn-reset');
+            const forwardBiasBtn = document.getElementById('btn-forward-bias');
+            const reverseBiasBtn = document.getElementById('btn-reverse-bias');
+            const showForwardBtn = document.getElementById('btn-show-forward');
+            const showReverseBtn = document.getElementById('btn-show-reverse');
+            const speedSlider = document.getElementById('speed-slider');
+            const thicknessSlider = document.getElementById('thickness-slider');
+            const tempSlider = document.getElementById('temp-slider');
+            const voltageSlider = document.getElementById('voltage-slider');
+            const speedValue = document.getElementById('speed-value');
+            const thicknessValue = document.getElementById('thickness-value');
+            const tempValue = document.getElementById('temp-value');
+            const voltageDisplay = document.getElementById('voltage-display');
+            const electricField = document.getElementById('electric-field');
+            const fieldArrow = document.getElementById('field-arrow');
+            const depletionLayer = document.getElementById('depletion-layer');
+            const currentIndicator = document.getElementById('current-indicator');
+            const biasMode = document.getElementById('bias-mode');
+            const circuitMode = document.getElementById('circuit-mode');
+            const currentValue = document.getElementById('current-value');
+            const depletionWidth = document.getElementById('depletion-width');
+            const voltageValue = document.getElementById('voltage-value');
+            
+            // 载流子计数器
+            const majorityHoles = document.getElementById('majority-holes');
+            const majorityElectrons = document.getElementById('majority-electrons');
+            const minorityElectrons = document.getElementById('minority-electrons');
+            const minorityHoles = document.getElementById('minority-holes');
+            const diffusionCurrent = document.getElementById('diffusion-current');
+            const driftCurrent = document.getElementById('drift-current');
+            const netCurrent = document.getElementById('net-current');
+            
+            let animationState = 'stopped'; // stopped, running, completed
+            let biasModeState = 'none'; // none, forward, reverse
+            let particles = [];
+            let ions = [];
+            let animationFrameId;
+            let depletionWidthValue = 10; // 耗尽层宽度百分比
+            
+            // 初始化画布
+            function initCanvas() {
+                // 清除现有内容
+                particles.forEach(p => {
+                    if (p.element && p.element.parentNode === canvas) {
+                        canvas.removeChild(p.element);
+                    }
+                });
+                
+                if (ions.length > 0) {
+                    ions.forEach(ion => {
+                        if (ion.element && ion.element.parentNode === canvas) {
+                            canvas.removeChild(ion.element);
+                        }
+                    });
+                }
+                
+                particles = [];
+                ions = [];
+                
+                // 创建P型区域和N型区域背景
+                const pRegion = document.createElement('div');
+                pRegion.style.position = 'absolute';
+                pRegion.style.left = '0';
+                pRegion.style.top = '0';
+                pRegion.style.width = '50%';
+                pRegion.style.height = '100%';
+                pRegion.style.background = 'linear-gradient(90deg, rgba(255, 82, 82, 0.1) 0%, rgba(255, 82, 82, 0.05) 100%)';
+                pRegion.style.borderRight = '2px dashed #ff5252';
+                canvas.appendChild(pRegion);
+                
+                const nRegion = document.createElement('div');
+                nRegion.style.position = 'absolute';
+                nRegion.style.right = '0';
+                nRegion.style.top = '0';
+                nRegion.style.width = '50%';
+                nRegion.style.height = '100%';
+                nRegion.style.background = 'linear-gradient(90deg, rgba(79, 195, 247, 0.05) 0%, rgba(79, 195, 247, 0.1) 100%)';
+                nRegion.style.borderLeft = '2px dashed #4fc3f7';
+                canvas.appendChild(nRegion);
+                
+                // 创建初始粒子
+                createParticles();
+                
+                // 重置电场显示
+                electricField.style.opacity = '0';
+                fieldArrow.style.opacity = '0';
+                
+                // 更新耗尽层
+                updateDepletionLayer();
+                
+                // 重置计数器
+                updateCounters();
+            }
+            
+            // 创建粒子
+            function createParticles() {
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                
+                // 创建P区空穴 (多子)
+                for (let i = 0; i < 20; i++) {
+                    const hole = {
+                        type: 'hole',
+                        carrier: 'majority',
+                        x: Math.random() * width * 0.4 + width * 0.05,
+                        y: Math.random() * height * 0.8 + height * 0.1,
+                        element: document.createElement('div')
+                    };
+                    
+                    hole.element.className = 'particle hole majority';
+                    hole.element.style.left = hole.x + 'px';
+                    hole.element.style.top = hole.y + 'px';
+                    
+                    canvas.appendChild(hole.element);
+                    particles.push(hole);
+                }
+                
+                // 创建N区电子 (多子)
+                for (let i = 0; i < 20; i++) {
+                    const electron = {
+                        type: 'electron',
+                        carrier: 'majority',
+                        x: Math.random() * width * 0.4 + width * 0.55,
+                        y: Math.random() * height * 0.8 + height * 0.1,
+                        element: document.createElement('div')
+                    };
+                    
+                    electron.element.className = 'particle electron majority';
+                    electron.element.style.left = electron.x + 'px';
+                    electron.element.style.top = electron.y + 'px';
+                    
+                    canvas.appendChild(electron.element);
+                    particles.push(electron);
+                }
+                
+                // 创建P区电子 (少子)
+                for (let i = 0; i < 5; i++) {
+                    const electron = {
+                        type: 'electron',
+                        carrier: 'minority',
+                        x: Math.random() * width * 0.4 + width * 0.05,
+                        y: Math.random() * height * 0.8 + height * 0.1,
+                        element: document.createElement('div')
+                    };
+                    
+                    electron.element.className = 'particle electron';
+                    electron.element.style.left = electron.x + 'px';
+                    electron.element.style.top = electron.y + 'px';
+                    
+                    canvas.appendChild(electron.element);
+                    particles.push(electron);
+                }
+                
+                // 创建N区空穴 (少子)
+                for (let i = 0; i < 5; i++) {
+                    const hole = {
+                        type: 'hole',
+                        carrier: 'minority',
+                        x: Math.random() * width * 0.4 + width * 0.55,
+                        y: Math.random() * height * 0.8 + height * 0.1,
+                        element: document.createElement('div')
+                    };
+                    
+                    hole.element.className = 'particle hole';
+                    hole.element.style.left = hole.x + 'px';
+                    hole.element.style.top = hole.y + 'px';
+                    
+                    canvas.appendChild(hole.element);
+                    particles.push(hole);
+                }
+            }
+            
+            // 开始扩散动画
+            function startDiffusion() {
+                if (animationState === 'running') return;
+                
+                animationState = 'running';
+                electricField.style.opacity = '1';
+                fieldArrow.style.opacity = '1';
+                
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                const centerX = width / 2;
+                const speed = parseInt(speedSlider.value) / 10;
+                
+                // 创建离子
+                createIons();
+                
+                // 动画循环
+                function animate() {
+                    let majorityHolesCount = 0;
+                    let majorityElectronsCount = 0;
+                    let minorityElectronsCount = 0;
+                    let minorityHolesCount = 0;
+                    
+                    particles.forEach(particle => {
+                        // 更新计数器
+                        if (particle.type === 'hole' && particle.carrier === 'majority') majorityHolesCount++;
+                        if (particle.type === 'electron' && particle.carrier === 'majority') majorityElectronsCount++;
+                        if (particle.type === 'electron' && particle.carrier === 'minority') minorityElectronsCount++;
+                        if (particle.type === 'hole' && particle.carrier === 'minority') minorityHolesCount++;
+                        
+                        // 随机移动粒子
+                        const moveX = (Math.random() - 0.5) * 2 * speed;
+                        const moveY = (Math.random() - 0.5) * 2 * speed;
+                        
+                        // 根据粒子类型和偏置模式决定运动方向
+                        if (biasModeState === 'forward') {
+                            // 正向偏置 - 增强扩散
+                            if (particle.type === 'hole') {
+                                particle.x += Math.abs(moveX) * 2;
+                            } else {
+                                particle.x -= Math.abs(moveX) * 2;
+                            }
+                        } else if (biasModeState === 'reverse') {
+                            // 反向偏置 - 减少扩散
+                            if (particle.type === 'hole') {
+                                particle.x -= Math.abs(moveX) * 0.2;
+                            } else {
+                                particle.x += Math.abs(moveX) * 0.2;
+                            }
+                        } else {
+                            // 无偏置 - 正常扩散
+                            if (particle.type === 'hole') {
+                                particle.x += moveX;
+                            } else {
+                                particle.x -= moveX;
+                            }
+                        }
+                        
+                        particle.y += moveY;
+                        
+                        // 边界检查
+                        particle.x = Math.max(0, Math.min(width - 20, particle.x));
+                        particle.y = Math.max(0, Math.min(height - 20, particle.y));
+                        
+                        // 应用位置
+                        particle.element.style.left = particle.x + 'px';
+                        particle.element.style.top = particle.y + 'px';
+                    });
+                    
+                    // 更新计数器显示
+                    majorityHoles.textContent = majorityHolesCount;
+                    majorityElectrons.textContent = majorityElectronsCount;
+                    minorityElectrons.textContent = minorityElectronsCount;
+                    minorityHoles.textContent = minorityHolesCount;
+                    
+                    // 更新电流显示
+                    updateCurrentDisplay();
+                    
+                    animationFrameId = requestAnimationFrame(animate);
+                }
+                
+                animate();
+            }
+            
+            // 创建离子
+            function createIons() {
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                
+                // 清除现有离子
+                ions.forEach(ion => {
+                    if (ion.element && ion.element.parentNode === canvas) {
+                        canvas.removeChild(ion.element);
+                    }
+                });
+                
+                ions = [];
+                
+                // 创建P区负离子
+                for (let i = 0; i < 8; i++) {
+                    const ion = {
+                        type: 'negative',
+                        x: width * 0.5 - depletionWidthValue/2 - i * 8,
+                        y: height * 0.2 + Math.random() * height * 0.6,
+                        element: document.createElement('div')
+                    };
+                    
+                    ion.element.className = 'ion negative';
+                    ion.element.textContent = '-';
+                    ion.element.style.left = ion.x + 'px';
+                    ion.element.style.top = ion.y + 'px';
+                    
+                    canvas.appendChild(ion.element);
+                    ions.push(ion);
+                }
+                
+                // 创建N区正离子
+                for (let i = 0; i < 8; i++) {
+                    const ion = {
+                        type: 'positive',
+                        x: width * 0.5 + depletionWidthValue/2 + i * 8,
+                        y: height * 0.2 + Math.random() * height * 0.6,
+                        element: document.createElement('div')
+                    };
+                    
+                    ion.element.className = 'ion positive';
+                    ion.element.textContent = '+';
+                    ion.element.style.left = ion.x + 'px';
+                    ion.element.style.top = ion.y + 'px';
+                    
+                    canvas.appendChild(ion.element);
+                    ions.push(ion);
+                }
+            }
+            
+            // 重置动画
+            function resetAnimation() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                
+                animationState = 'stopped';
+                biasModeState = 'none';
+                voltageSlider.value = 0;
+                voltageDisplay.textContent = '0 V';
+                voltageValue.textContent = '0';
+                
+                // 移除电场
+                electricField.style.opacity = '0';
+                fieldArrow.style.opacity = '0';
+                
+                // 更新电路显示
+                currentIndicator.textContent = 'I = 0 mA';
+                biasMode.textContent = '无偏置';
+                circuitMode.textContent = '无偏置';
+                currentValue.textContent = '0 mA';
+                
+                // 重新初始化画布
+                initCanvas();
+            }
+            
+            // 设置正向偏置
+            function setForwardBias() {
+                biasModeState = 'forward';
+                voltageSlider.value = 5;
+                updateVoltageDisplay();
+                
+                // 更新电场方向
+                fieldArrow.textContent = '→';
+                fieldArrow.style.left = 'calc(50% + 40px)';
+                electricField.style.background = 'linear-gradient(to right, ' +
+                    'rgba(0, 255, 0, 0) 0%, ' +
+                    'rgba(0, 255, 0, 0.3) 50%, ' +
+                    'rgba(0, 255, 0, 0) 100%)';
+                
+                // 更新电路显示
+                biasMode.textContent = '正向偏置';
+                circuitMode.textContent = '正向偏置';
+                
+                // 更新耗尽层
+                depletionWidthValue = 5;
+                updateDepletionLayer();
+                
+                // 如果动画还没开始，自动开始
+                if (animationState === 'stopped') {
+                    startDiffusion();
+                }
+            }
+            
+            // 设置反向偏置
+            function setReverseBias() {
+                biasModeState = 'reverse';
+                voltageSlider.value = -5;
+                updateVoltageDisplay();
+                
+                // 更新电场方向
+                fieldArrow.textContent = '←';
+                fieldArrow.style.left = 'calc(50% - 40px)';
+                electricField.style.background = 'linear-gradient(to right, ' +
+                    'rgba(255, 0, 0, 0) 0%, ' +
+                    'rgba(255, 0, 0, 0.3) 50%, ' +
+                    'rgba(255, 0, 0, 0) 100%)';
+                
+                // 更新电路显示
+                biasMode.textContent = '反向偏置';
+                circuitMode.textContent = '反向偏置';
+                
+                // 更新耗尽层
+                depletionWidthValue = 15;
+                updateDepletionLayer();
+                
+                // 如果动画还没开始，自动开始
+                if (animationState === 'stopped') {
+                    startDiffusion();
+                }
+            }
+            
+            // 更新耗尽层显示
+            function updateDepletionLayer() {
+                const width = canvas.offsetWidth;
+                depletionLayer.style.left = (50 - depletionWidthValue/2) + '%';
+                depletionLayer.style.right = (50 - depletionWidthValue/2) + '%';
+                
+                // 更新耗尽层宽度显示
+                if (depletionWidthValue < 7) {
+                    depletionWidth.textContent = '窄';
+                } else if (depletionWidthValue < 13) {
+                    depletionWidth.textContent = '中等';
+                } else {
+                    depletionWidth.textContent = '宽';
+                }
+            }
+            
+            // 更新电流显示
+            function updateCurrentDisplay() {
+                let current = 0;
+                let diffusion = 0;
+                let drift = 0;
+                
+                if (biasModeState === 'forward') {
+                    current = 15 + Math.random() * 5;
+                    diffusion = 18 + Math.random() * 4;
+                    drift = 3 + Math.random() * 2;
+                } else if (biasModeState === 'reverse') {
+                    current = -0.1 - Math.random() * 0.05;
+                    diffusion = 0.5 + Math.random() * 0.3;
+                    drift = 0.6 + Math.random() * 0.3;
+                }
+                
+                currentIndicator.textContent = `I = ${current.toFixed(2)} mA`;
+                currentValue.textContent = `${current.toFixed(2)} mA`;
+                diffusionCurrent.textContent = diffusion.toFixed(2);
+                driftCurrent.textContent = drift.toFixed(2);
+                netCurrent.textContent = current.toFixed(2);
+            }
+            
+            // 更新电压显示
+            function updateVoltageDisplay() {
+                const voltage = parseInt(voltageSlider.value);
+                voltageDisplay.textContent = `${voltage} V`;
+                voltageValue.textContent = `${voltage}`;
+                
+                // 根据电压设置偏置模式
+                if (voltage > 0) {
+                    biasModeState = 'forward';
+                    biasMode.textContent = '正向偏置';
+                    circuitMode.textContent = '正向偏置';
+                    
+                    // 更新电场方向
+                    fieldArrow.textContent = '→';
+                    fieldArrow.style.left = 'calc(50% + 40px)';
+                    electricField.style.background = 'linear-gradient(to right, ' +
+                        'rgba(0, 255, 0, 0) 0%, ' +
+                        'rgba(0, 255, 0, 0.3) 50%, ' +
+                        'rgba(0, 255, 0, 0) 100%)';
+                    
+                    // 更新耗尽层
+                    depletionWidthValue = 10 - voltage;
+                    updateDepletionLayer();
+                } else if (voltage < 0) {
+                    biasModeState = 'reverse';
+                    biasMode.textContent = '反向偏置';
+                    circuitMode.textContent = '反向偏置';
+                    
+                    // 更新电场方向
+                    fieldArrow.textContent = '←';
+                    fieldArrow.style.left = 'calc(50% - 40px)';
+                    electricField.style.background = 'linear-gradient(to right, ' +
+                        'rgba(255, 0, 0, 0) 0%, ' +
+                        'rgba(255, 0, 0, 0.3) 50%, ' +
+                        'rgba(255, 0, 0, 0) 100%)';
+                    
+                    // 更新耗尽层
+                    depletionWidthValue = 10 - voltage;
+                    updateDepletionLayer();
+                } else {
+                    biasModeState = 'none';
+                    biasMode.textContent = '无偏置';
+                    circuitMode.textContent = '无偏置';
+                    
+                    // 更新耗尽层
+                    depletionWidthValue = 10;
+                    updateDepletionLayer();
+                }
+                
+                // 如果动画还没开始，自动开始
+                if (animationState === 'stopped' && voltage !== 0) {
+                    startDiffusion();
+                }
+            }
+            
+            // 更新计数器
+            function updateCounters() {
+                majorityHoles.textContent = '20';
+                majorityElectrons.textContent = '20';
+                minorityElectrons.textContent = '5';
+                minorityHoles.textContent = '5';
+                
+                diffusionCurrent.textContent = '0';
+                driftCurrent.textContent = '0';
+                netCurrent.textContent = '0';
+            }
+            
+            // 事件监听器
+            startBtn.addEventListener('click', startDiffusion);
+            resetBtn.addEventListener('click', resetAnimation);
+            forwardBiasBtn.addEventListener('click', setForwardBias);
+            reverseBiasBtn.addEventListener('click', setReverseBias);
+            showForwardBtn.addEventListener('click', setForwardBias);
+            showReverseBtn.addEventListener('click', setReverseBias);
+            
+            speedSlider.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 4) speedValue.textContent = '慢速';
+                else if (value < 7) speedValue.textContent = '中等';
+                else speedValue.textContent = '快速';
+            });
+            
+            thicknessSlider.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 4) thicknessValue.textContent = '薄';
+                else if (value < 7) thicknessValue.textContent = '中等';
+                else thicknessValue.textContent = '厚';
+                
+                depletionWidthValue = value;
+                updateDepletionLayer();
+                
+                // 重新创建离子
+                if (animationState === 'running') {
+                    createIons();
+                }
+            });
+            
+            tempSlider.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value < 4) tempValue.textContent = '低温';
+                else if (value < 7) tempValue.textContent = '室温';
+                else tempValue.textContent = '高温';
+            });
+            
+            voltageSlider.addEventListener('input', updateVoltageDisplay);
+            
+            // 初始化
+            initCanvas();
+        });
+    </script>
+</body>
+</html>
